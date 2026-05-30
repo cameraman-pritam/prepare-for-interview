@@ -1,122 +1,58 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useState } from "react";
+import { createClient } from "@supabase/supabase-js";
 
-function App() {
-  const [count, setCount] = useState(0)
+// 1. Initialize Supabase client
+//Replace these with your actual values from the Supabase Dashboard
+const supabaseUrl = "https://supabase.co";
+const supabaseAnonKey = "your-anon-key";
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+export default function App() {
+  const [input, setInput] = useState("Explain Deno in one sentence.");
+  const [response, setResponse] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const testFunction = async () => {
+    setLoading(true);
+    try {
+      // 2. Invoke your Edge Function
+      // Replace 'your-function-name' with the name you used in 'supabase functions deploy'
+      const { data, error } = await supabase.functions.invoke(
+        "your-function-name",
+        {
+          body: { content: input }, // Passing the user content in the body
+        },
+      );
+
+      if (error) throw error;
+      setResponse(data.content); // Access the message content from OpenAI's response
+    } catch (err) {
+      setResponse(`Error: ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div style={{ padding: "20px", fontFamily: "sans-serif" }}>
+      <h1>Interview Bot Tester</h1>
+      <textarea
+        value={input}
+        onChange={(e) => setInput(e.target.value)}
+        rows="4"
+        style={{ width: "100%", marginBottom: "10px" }}
+      />
+      <br />
+      <button onClick={testFunction} disabled={loading}>
+        {loading ? "Thinking..." : "Send to Bot"}
+      </button>
 
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+      <div
+        style={{ marginTop: "20px", padding: "10px", background: "#f4f4f4" }}
+      >
+        <strong>Bot Response:</strong>
+        <p>{response || "No response yet."}</p>
+      </div>
+    </div>
+  );
 }
-
-export default App
